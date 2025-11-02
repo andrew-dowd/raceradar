@@ -1,0 +1,52 @@
+name: Nightly Race Data Pipeline
+
+on:
+  schedule:
+    # Run at 2 AM UTC daily (adjust timezone as needed)
+    - cron: '0 2 * * *'
+
+  # Allow manual triggering from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  update-race-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Import seed races
+        run: python scripts/import_seed_csv.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Check race availability
+        run: python scripts/check_availability.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Resolve latest statuses
+        run: python scripts/resolve_latest.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Pipeline completion summary
+        if: always()
+        run: |
+          echo "✅ Pipeline execution completed"
+          echo "Check logs above for details"

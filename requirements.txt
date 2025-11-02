@@ -1,0 +1,10 @@
+# RaceRadar Dependencies
+# Core
+requests==2.31.0
+beautifulsoup4==4.12.3
+python-slugify==8.0.4
+lxml==5.1.0
+
+# Optional: For future improvements
+# playwright==1.40.0  # For JavaScript rendering
+# python-dotenv==1.0.0  # For local env file management
